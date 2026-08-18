@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Traffic Comparison{% endblock %}
+
+{% block content %}
+<h1>Traffic Comparison: {{ website1 }} vs {{ website2 }}</h1>
+
+<section class="chart-section">
+    <h2>Visitors by Country</h2>
+    {% if error1 %}
+        <p style="color: red;">{{ website1 }}: {{ error1 }}</p>
+    {% else %}
+        <canvas id="trafficChart1" width="400" height="200"></canvas>
+    {% endif %}
+    {% if error2 %}
+        <p style="color: red;">{{ website2 }}: {{ error2 }}</p>
+    {% else %}
+        <canvas id="trafficChart2" width="400" height="200"></canvas>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Overview</h2>
+    <div style="display: flex; gap: 30px;">
+        <div>
+            <h3>{{ website1 }}</h3>
+            {% if not error1 %}
+            <table class="top-pages-table">
+                <tbody>
+                    <tr><th>Alexa Rank</th><td>{{ data1.alexa_rank }}</td></tr>
+                    <tr><th>Daily Pageviews / Visitor</th><td>{{ data1.daily_pageviews_per_visitor }}</td></tr>
+                    <tr><th>Daily Time on Site</th><td>{{ data1.daily_time_on_site }}</td></tr>
+                    <tr><th>Bounce Rate (%)</th><td>{{ data1.bounce_rate_percentage }}</td></tr>
+                    <tr><th>Search Traffic (%)</th><td>{{ data1.search_traffic_percentage }}</td></tr>
+                    <tr><th>Total Sites Linking In</th><td>{{ data1.total_sites_linking_in }}</td></tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+
+        <div>
+            <h3>{{ website2 }}</h3>
+            {% if not error2 %}
+            <table class="top-pages-table">
+                <tbody>
+                    <tr><th>Alexa Rank</th><td>{{ data2.alexa_rank }}</td></tr>
+                    <tr><th>Daily Pageviews / Visitor</th><td>{{ data2.daily_pageviews_per_visitor }}</td></tr>
+                    <tr><th>Daily Time on Site</th><td>{{ data2.daily_time_on_site }}</td></tr>
+                    <tr><th>Bounce Rate (%)</th><td>{{ data2.bounce_rate_percentage }}</td></tr>
+                    <tr><th>Search Traffic (%)</th><td>{{ data2.search_traffic_percentage }}</td></tr>
+                    <tr><th>Total Sites Linking In</th><td>{{ data2.total_sites_linking_in }}</td></tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Top Keywords</h2>
+    <div style="display: flex; gap: 30px;">
+        <div>
+            <h3>{{ website1 }}</h3>
+            {% if not error1 %}
+                <table class="keyword-table">
+                    <thead>
+                        <tr><th>Keyword</th><th>Search Traffic (%)</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for keyword in (data1.top_keywords or []) %}
+                        <tr>
+                            <td>{{ keyword.keyword }}</td>
+                            <td>{{ keyword.search_traffic_percentage }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+
+        <div>
+            <h3>{{ website2 }}</h3>
+            {% if not error2 %}
+                <table class="keyword-table">
+                    <thead>
+                        <tr><th>Keyword</th><th>Search Traffic (%)</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for keyword in (data2.top_keywords or []) %}
+                        <tr>
+                            <td>{{ keyword.keyword }}</td>
+                            <td>{{ keyword.search_traffic_percentage }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Similar Sites</h2>
+    <div style="display: flex; gap: 30px;">
+        <div>
+            <h3>{{ website1 }}</h3>
+            {% if not error1 %}
+                <table class="keyword-table">
+                    <thead>
+                        <tr><th>Website</th><th>Search Traffic (%)</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for site in (data1.similar_sites or []) %}
+                        <tr>
+                            <td>{{ site.website }}</td>
+                            <td>{{ site.search_traffic_percentage }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+
+        <div>
+            <h3>{{ website2 }}</h3>
+            {% if not error2 %}
+                <table class="keyword-table">
+                    <thead>
+                        <tr><th>Website</th><th>Search Traffic (%)</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for site in (data2.similar_sites or []) %}
+                        <tr>
+                            <td>{{ site.website }}</td>
+                            <td>{{ site.search_traffic_percentage }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<hr>
+
+<h2>🔍 AI-Generated Recommendations</h2>
+{% if insights %}
+    <div>
+        {{ insights | safe }}
+    </div>
+{% else %}
+    <div>
+        <p>Recommendations are not available (one or both API calls failed).</p>
+    </div>
+{% endif %}
+
+<script>
+    const trafficData1 = JSON.parse('{{ history1 | safe }}');
+    const trafficData2 = JSON.parse('{{ history2 | safe }}');
+
+    const labels1 = Object.keys(trafficData1);
+    const visits1 = Object.values(trafficData1);
+
+    const labels2 = Object.keys(trafficData2);
+    const visits2 = Object.values(trafficData2);
+
+    if (labels1.length > 0 && document.getElementById('trafficChart1')) {
+        new Chart(document.getElementById('trafficChart1'), {
+            type: 'bar',
+            data: {
+                labels: labels1,
+                datasets: [{
+                    label: 'Traffic by Country (%) - {{ website1 }}',
+                    data: visits1,
+                    backgroundColor: '#007bff'
+                }]
+            }
+        });
+    }
+
+    if (labels2.length > 0 && document.getElementById('trafficChart2')) {
+        new Chart(document.getElementById('trafficChart2'), {
+            type: 'bar',
+            data: {
+                labels: labels2,
+                datasets: [{
+                    label: 'Traffic by Country (%) - {{ website2 }}',
+                    data: visits2,
+                    backgroundColor: '#28a745'
+                }]
+            }
+        });
+    }
+</script>
+{% endblock %}

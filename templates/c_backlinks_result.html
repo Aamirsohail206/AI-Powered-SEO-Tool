@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Backlink Comparison Results{% endblock %}
+
+{% block content %}
+<h2>Backlink Comparison</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Metric</th>
+            <th>Your Website</th>
+            <th>Competitor's Website</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% set main_counts = result.main_backlinks.counts if result.main_backlinks and result.main_backlinks.counts else {} %}
+        {% set comp_counts = result.competitor_backlinks.counts if result.competitor_backlinks and result.competitor_backlinks.counts else {} %}
+        {% set main_backlinks_counts = main_counts.backlinks if main_counts and main_counts.backlinks else {} %}
+        {% set comp_backlinks_counts = comp_counts.backlinks if comp_counts and comp_counts.backlinks else {} %}
+        {% set main_domains_counts = main_counts.domains if main_counts and main_counts.domains else {} %}
+        {% set comp_domains_counts = comp_counts.domains if comp_counts and comp_counts.domains else {} %}
+
+        <tr><td><strong>Total Backlinks</strong></td><td>{{ main_backlinks_counts.total if main_backlinks_counts.total is not none else 'N/A' }}</td><td>{{ comp_backlinks_counts.total if comp_backlinks_counts.total is not none else 'N/A' }}</td></tr>
+        <tr><td><strong>DoFollow Backlinks</strong></td><td>{{ main_backlinks_counts.doFollow if main_backlinks_counts.doFollow is not none else 'N/A' }}</td><td>{{ comp_backlinks_counts.doFollow if comp_backlinks_counts.doFollow is not none else 'N/A' }}</td></tr>
+        <tr><td><strong>Referring Domains</strong></td><td>{{ main_domains_counts.total if main_domains_counts.total is not none else 'N/A' }}</td><td>{{ comp_domains_counts.total if comp_domains_counts.total is not none else 'N/A' }}</td></tr>
+        <tr><td><strong>DoFollow Domains</strong></td><td>{{ main_domains_counts.doFollow if main_domains_counts.doFollow is not none else 'N/A' }}</td><td>{{ comp_domains_counts.doFollow if comp_domains_counts.doFollow is not none else 'N/A' }}</td></tr>
+    </tbody>
+</table>
+
+<button id="show-recommendations-btn" onclick="showRecommendations()">Show Recommendations</button>
+
+<div id="recommendations" style="display: none;">
+    <h2>AI-Powered Backlink Recommendations</h2>
+    <div class="border p-3 bg-light">
+        {{ result.recommendations | safe }}
+    </div>
+</div>
+
+<h2>Your Website's Backlinks List (Top 10):</h2>
+<table>
+    <thead>
+        <tr><th>From</th><th>To</th><th>Title</th><th>Anchor</th><th>NoFollow</th><th>First Seen</th><th>Last Visited</th></tr>
+    </thead>
+    <tbody>
+    {% for backlink in (result.main_backlinks.backlinksList if result.main_backlinks and result.main_backlinks.backlinksList else [])[:10] %}
+        <tr>
+            <td><a href="{{ backlink.url_from }}" target="_blank">{{ backlink.url_from }}</a></td>
+            <td>{{ backlink.url_to }}</td>
+            <td>{{ backlink.title }}</td>
+            <td>{{ backlink.anchor }}</td>
+            <td>{{ backlink.nofollow }}</td>
+            <td>{{ backlink.first_seen }}</td>
+            <td>{{ backlink.last_visited }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h2>Competitor Website's Backlinks List (Top 10):</h2>
+<table>
+    <thead>
+        <tr><th>From</th><th>To</th><th>Title</th><th>Anchor</th><th>NoFollow</th><th>First Seen</th><th>Last Visited</th></tr>
+    </thead>
+    <tbody>
+    {% for backlink in (result.competitor_backlinks.backlinksList if result.competitor_backlinks and result.competitor_backlinks.backlinksList else [])[:10] %}
+        <tr>
+            <td><a href="{{ backlink.url_from }}" target="_blank">{{ backlink.url_from }}</a></td>
+            <td>{{ backlink.url_to }}</td>
+            <td>{{ backlink.title }}</td>
+            <td>{{ backlink.anchor }}</td>
+            <td>{{ backlink.nofollow }}</td>
+            <td>{{ backlink.first_seen }}</td>
+            <td>{{ backlink.last_visited }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<script>
+function showRecommendations() {
+    document.getElementById("recommendations").style.display = "block";
+    document.getElementById("show-recommendations-btn").style.display = "none";
+}
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Traffic Results{% endblock %}
+
+{% block content %}
+        <h1>Traffic Analysis Results</h1>
+    
+        <section class="chart-section">
+            <h2>Traffic Breakdown</h2>
+            {% if error %}
+                <p style="color: red;">{{ error }}</p>
+            {% else %}
+            <canvas id="trafficChart" width="400" height="200"></canvas>
+
+            
+            {% endif %}
+        </section>
+
+        {% if not error %}
+        <section>
+            <h2>Overview</h2>
+            <table class="top-pages-table">
+                <tbody>
+                    <tr>
+                        <th>Domain</th>
+                        <td>{{ data.domain or website }}</td>
+                    </tr>
+                    <tr>
+                        <th>Alexa Rank</th>
+                        <td>{{ data.alexa_rank }}</td>
+                    </tr>
+                    <tr>
+                        <th>Daily Pageviews / Visitor</th>
+                        <td>{{ data.daily_pageviews_per_visitor }}</td>
+                    </tr>
+                    <tr>
+                        <th>Daily Time on Site</th>
+                        <td>{{ data.daily_time_on_site }}</td>
+                    </tr>
+                    <tr>
+                        <th>Bounce Rate (%)</th>
+                        <td>{{ data.bounce_rate_percentage }}</td>
+                    </tr>
+                    <tr>
+                        <th>Search Traffic (%)</th>
+                        <td>{{ data.search_traffic_percentage }}</td>
+                    </tr>
+                    <tr>
+                        <th>Total Sites Linking In</th>
+                        <td>{{ data.total_sites_linking_in }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+            
+
+        <section>
+            <h2>Visitors by Country</h2>
+            <table class="keyword-table">
+                <thead>
+                    <tr>
+                        <th>Country</th>
+                        <th>Traffic (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in (data.visitors_by_country or []) %}
+                    <tr>
+                        <td>{{ row.country }}</td>
+                        <td>{{ row.site_traffic_percentage }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Top Keywords</h2>
+            <table class="keyword-table">
+                <thead>
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Search Traffic (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for keyword in (data.top_keywords or []) %}
+                    <tr>
+                        <td>{{ keyword.keyword }}</td>
+                        <td>{{ keyword.search_traffic_percentage }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Similar Sites</h2>
+            <table class="keyword-table">
+                <thead>
+                    <tr>
+                        <th>Website</th>
+                        <th>Search Traffic (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for site in (data.similar_sites or []) %}
+                    <tr>
+                        <td>{{ site.website }}</td>
+                        <td>{{ site.search_traffic_percentage }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+            
+
+
+    <section>
+
+        <a href="{{ url_for('traffic_recommendations') }}" class="btn" target="_blank">See Insights</a>
+
+
+    </section>
+    
+    
+
+
+
+    {% if not error %}
+    <script>
+        var trafficData = JSON.parse('{{ traffic_history | safe }}');
+    
+        console.log("Traffic Data:", trafficData); // Debugging
+    
+        // 🚀 Extract labels + values
+        let labels = Object.keys(trafficData);
+        let visits = Object.values(trafficData);
+    
+        console.log("Labels:", labels);
+        console.log("Visits:", visits);
+    
+        // 🔹 Create chart only if there is data
+        if (labels.length > 0) {
+            new Chart(document.getElementById('trafficChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Traffic by Country (%)',
+                        data: visits,
+                        backgroundColor: '#007bff'
+                    }]
+                }
+            });
+        } else {
+            document.write("<p style='color:red;'>No traffic data available.</p>");
+        }
+    </script>
+    {% endif %}
+    
+{% endblock %}

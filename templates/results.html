@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Backlinks Results{% endblock %}
+
+{% block content %}
+<section style="padding: 6rem 2rem 4rem; background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%); min-height: 100vh;">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    
+    <h1 style="font-size: 3rem; font-weight: 800; background: linear-gradient(to right, #fff, #e0e0e0); background-clip: text; -webkit-background-clip: text; color: transparent; -webkit-text-fill-color: transparent; margin-bottom: 2rem;">
+      Backlinks Results
+    </h1>
+
+    {% if error %}
+      <p style="color:red;">{{ error }}</p>
+    {% else %}
+      <div style="color: white; font-size: 1.2rem; margin-bottom: 2rem;">
+        <p><strong>URL:</strong> {{ data.url }}</p>
+        <p><strong>Domain:</strong> {{ data.domain }}</p>
+      </div>
+
+      <!-- Metrics Section -->
+      <section style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 2rem;">
+        {% set backlinks_counts = (data.counts.backlinks if data.counts and data.counts.backlinks else {}) %}
+        {% set domains_counts = (data.counts.domains if data.counts and data.counts.domains else {}) %}
+        {% set metrics = [
+          ('Total Backlinks', backlinks_counts.total if backlinks_counts.total is not none else 'N/A'),
+          ('DoFollow Backlinks', backlinks_counts.doFollow if backlinks_counts.doFollow is not none else 'N/A'),
+          ('Text Backlinks', backlinks_counts.text if backlinks_counts.text is not none else 'N/A'),
+          ('Backlinks To Home Page', backlinks_counts.toHomePage if backlinks_counts.toHomePage is not none else 'N/A'),
+          ('Referring Domains', domains_counts.total if domains_counts.total is not none else 'N/A'),
+          ('DoFollow Domains', domains_counts.doFollow if domains_counts.doFollow is not none else 'N/A')
+        ] %}
+        {% for title, value in metrics %}
+        <div style="flex: 1 1 250px; background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center;">
+          <h2 style="font-size: 1.2rem; font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem;">{{ title }}</h2>
+          <p style="font-size: 1.5rem; font-weight: bold; color: #111827;">{{ value }}</p>
+        </div>
+        {% endfor %}
+      </section>
+
+      <!-- Backlinks List Section -->
+      <h2 style="color: white; font-size: 2rem; margin-bottom: 1rem;">Backlinks List</h2>
+      <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+        {% for backlink in data.backlinksList %}
+        <div style="background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 0.5rem;">
+          <div><strong>From:</strong> <a href="{{ backlink.url_from }}" target="_blank" style="color: #4f46e5; word-break: break-all;">{{ backlink.url_from }}</a></div>
+          <div><strong>To:</strong> <span style="word-break: break-all;">{{ backlink.url_to }}</span></div>
+          <div><strong>Title:</strong> {{ backlink.title }}</div>
+          <div><strong>Anchor:</strong> {{ backlink.anchor }}</div>
+          <div><strong>NoFollow:</strong> {{ backlink.nofollow }}</div>
+          <div><strong>First Seen:</strong> {{ backlink.first_seen }}</div>
+          <div><strong>Last Visited:</strong> {{ backlink.last_visited }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Recommendations Button -->
+      <div style="text-align: center; margin-top: 3rem;">
+        <a href="{{ url_for('backlink_recommendations') }}" class="btn" style="padding: 0.75rem 1.5rem; background-color: white; color: #4f46e5; border: 2px solid white; border-radius: 0.5rem; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#f1f5f9';" onmouseout="this.style.backgroundColor='white';">
+          See Recommendations
+        </a>
+      </div>
+
+    {% endif %}
+  </div>
+</section>
+
+<!-- Loader Overlay -->
+<div id="loader-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: none; justify-content: center; align-items: center;">
+  <div class="loader" style="border: 5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 5px solid #fff; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
+</div>
+
+<style>
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+
+<script>
+  // Show loader overlay when the form is being submitted
+  const form = document.querySelector('form');
+  if (form) {
+    form.addEventListener('submit', function() {
+      document.getElementById('loader-overlay').style.display = 'flex';
+    });
+  }
+</script>
+
+{% endblock %}
